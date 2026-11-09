@@ -1,0 +1,11 @@
+@page
+@model IndexModel
+@{ ViewData["Title"] = "Genel bakış"; }
+<div class="page-heading"><div><div class="eyebrow">YÖNETİM PANELİ</div><h1>Baskı altyapınıza genel bakış</h1><p>Lokasyonları, cihazları ve bildirilen baskı hareketlerini tek yerden izleyin.</p></div><a class="button" asp-page="/Printers/Create">+ Yazıcı ekle</a></div>
+<section class="stats" aria-label="Özet göstergeler">
+<article><div class="stat-label">Lokasyon</div><div class="stat-value">@Model.Locations.ToString("N0")</div><div class="stat-note">Tanımlı mülk ve lokasyonlar</div></article>
+<article><div class="stat-label">Kayıtlı yazıcı</div><div class="stat-value">@Model.Printers.ToString("N0")</div><div class="stat-note">Çevrimiçi durumu henüz ölçülmüyor</div></article>
+<article><div class="stat-label">Baskı olayı</div><div class="stat-value">@Model.Events.ToString("N0")</div><div class="stat-note">@Model.Simulations simülasyon kaydı dahil</div></article>
+<article><div class="stat-label">Bildirilen baskı adedi</div><div class="stat-value">@Model.Impressions.ToString("N0")</div><div class="stat-note">@Model.UnknownImpressions kayıtta adet bilinmiyor</div></article></section>
+<section class="panel"><div class="panel-heading"><div><h2>Son baskı hareketleri</h2><p>Sunucu kuyruğu kayıtları · Türkiye saati</p></div><a asp-page="/Jobs/Index">Tüm kayıtları gör →</a></div><partial name="_JobsTable" model="Model.RecentJobs" /></section>
+<div class="two-columns"><section class="panel padded"><div class="eyebrow">PİLOT CİHAZ</div><h2>Olivetti d-COPIA 255MF KX</h2><p>Model bilgisi örnek envantere eklendi. IP adresi ve sunucu kuyruğu envanter ekranından tanımlanabilir.</p><a asp-page="/Printers/Index">Envanteri düzenle →</a></section><section class="panel padded"><div class="eyebrow">GELİŞTİRME SIRASI</div><h2>Önce görünürlük, ardından kontrol</h2><p>Sonraki adımlar: Windows olay toplama, AD eşleştirme ve raporlama. Kota, maliyet ve kart/PIN entegrasyonu henüz etkin değil.</p></section></div>

@@ -1,0 +1,9 @@
+@page
+@model PrintMerkez.Web.Pages.Printers.IndexModel
+@{ ViewData["Title"] = "Yazıcı envanteri"; }
+<div class="page-heading"><div><div class="eyebrow">CİHAZLAR</div><h1>Yazıcı envanteri</h1><p>Yazıcıları lokasyonları ve sunucu kuyruklarıyla eşleştirin.</p></div><a class="button" asp-page="Create">+ Yazıcı ekle</a></div>
+<form method="get" class="filters"><label>Yazıcı, model veya IP<input asp-for="Search" maxlength="100" placeholder="Envanterde ara" /></label><label>Lokasyon<select asp-for="LocationId"><option value="">Tüm lokasyonlar</option>@foreach(var l in Model.Locations){<option value="@l.Id">@l.Name</option>}</select></label><button class="button" type="submit">Filtrele</button><a class="button secondary" asp-page="Index">Temizle</a></form>
+<div class="panel"><div class="panel-heading"><h2>@Model.Printers.Count yazıcı gösteriliyor</h2><span class="help">En fazla 500 kayıt</span></div><div class="table-scroll"><table><thead><tr><th>Yazıcı / model</th><th>Lokasyon</th><th>IP adresi</th><th>Sunucu kuyruğu</th><th>Bağlantı</th><th></th></tr></thead><tbody>
+@if(Model.Printers.Count == 0){<tr><td colspan="6" class="empty">Henüz bu koşullara uygun yazıcı yok.</td></tr>}
+@foreach(var p in Model.Printers){<tr><td><strong>@p.Name</strong><small>@p.Model</small></td><td>@p.Location.Name</td><td>@(p.IpAddress ?? "Tanımlanmadı")</td><td>@(p.QueueName ?? "Tanımlanmadı")</td><td><span class="badge neutral">Ölçülmüyor</span></td><td><a asp-page="Create" asp-route-id="@p.Id">Düzenle</a></td></tr>}
+</tbody></table></div></div>

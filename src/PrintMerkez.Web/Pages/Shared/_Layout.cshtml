@@ -1,0 +1,10 @@
+<!DOCTYPE html>
+<html lang="tr"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@ViewData["Title"] · PrintMerkez</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head>
+<body><aside class="sidebar"><a class="brand" asp-page="/Index"><span class="brand-icon">P</span> PrintMerkez</a><div class="workspace-label">MERKEZİ YAZICI YÖNETİMİ</div><nav aria-label="Ana gezinme">
+<a asp-page="/Index" class="@(Context.Request.Path == "/" ? "active" : "")">◫ &nbsp; Genel bakış</a>
+<a asp-page="/Printers/Index" class="@(Context.Request.Path.StartsWithSegments("/Printers") ? "active" : "")">▤ &nbsp; Yazıcı envanteri</a>
+<a asp-page="/Locations/Index" class="@(Context.Request.Path.StartsWithSegments("/Locations") ? "active" : "")">⌖ &nbsp; Lokasyonlar</a>
+<a asp-page="/Jobs/Index" class="@(Context.Request.Path.StartsWithSegments("/Jobs") ? "active" : "")">≡ &nbsp; Baskı geçmişi</a></nav><div class="sidebar-note">● Yerel geliştirme ortamı<br /><small>İlk geliştirme adımı · v0.1</small></div></aside>
+<div class="main-shell"><header class="topbar"><span>Kurumsal baskı yönetimi</span><span class="environment">GELİŞTİRME</span></header><main><div class="notice"><strong>Geliştirme ortamı.</strong> Simülasyon kayıtları ve örnek lokasyonlar etiketlidir. Cihaz bağlantısı ve AD henüz etkin değil.</div>
+@if (TempData["Success"] is string message) { <div class="success" role="status">@message</div> }
+@RenderBody()</main><footer>PrintMerkez <span>Merkezi görünürlük, kontrollü baskı.</span></footer></div>@await RenderSectionAsync("Scripts", required: false)</body></html>

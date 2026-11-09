@@ -1,0 +1,12 @@
+@page
+@model PrintMerkez.Web.Pages.Jobs.IndexModel
+@{ ViewData["Title"] = "Baskı geçmişi"; }
+<div class="page-heading"><div><div class="eyebrow">BASKI HAREKETLERİ</div><h1>Baskı geçmişi</h1><p>Bildirilmiş olayları inceleyin ve filtreleyerek dışa aktarın.</p></div><a class="button secondary" asp-page-handler="Export" asp-route-Search="@Model.Search" asp-route-LocationId="@Model.LocationId" asp-route-From="@(Model.From?.ToString("yyyy-MM-dd"))" asp-route-To="@(Model.To?.ToString("yyyy-MM-dd"))" asp-route-Source="@Model.Source">CSV indir</a></div>
+<p class="explanation">Kuyruğun tamamlanması fiziksel baskıyı doğrulamaz. Baskı adedi, kopyalar dahil bildirilen yüz adedidir; bilinmeyen alanlar tahmin edilmez.</p>
+<form method="get"><div asp-validation-summary="All"></div><div class="filters">
+<label>Kullanıcı, yazıcı veya olay<input asp-for="Search" maxlength="160" /></label><label>Lokasyon<select asp-for="LocationId"><option value="">Tümü</option>@foreach(var l in Model.Locations){<option value="@l.Id">@l.Name</option>}</select></label>
+<label>Başlangıç<input asp-for="From" type="date" asp-format="{0:yyyy-MM-dd}" /></label><label>Bitiş<input asp-for="To" type="date" asp-format="{0:yyyy-MM-dd}" /></label><label>Kaynak<select asp-for="Source"><option value="">Tümü</option><option value="Simulation">Simülasyon</option><option value="WindowsPrintService">Windows</option></select></label><button type="submit" class="button">Filtrele</button><a class="button secondary" asp-page="Index">Temizle</a></div></form>
+<section class="panel"><div class="panel-heading"><h2>@Model.Total.ToString("N0") kayıt</h2><span class="help">Sayfa başına 25 kayıt</span></div><partial name="_JobsTable" model="Model.Jobs" /><div class="pagination">
+@if(Model.PageNumber > 1){<a asp-route-PageNumber="@(Model.PageNumber-1)" asp-route-Search="@Model.Search" asp-route-LocationId="@Model.LocationId" asp-route-From="@(Model.From?.ToString("yyyy-MM-dd"))" asp-route-To="@(Model.To?.ToString("yyyy-MM-dd"))" asp-route-Source="@Model.Source">← Önceki</a>}else{<span>Başlangıç</span>}
+<span>@Model.PageNumber / @Model.TotalPages</span>
+@if(Model.PageNumber < Model.TotalPages){<a asp-route-PageNumber="@(Model.PageNumber+1)" asp-route-Search="@Model.Search" asp-route-LocationId="@Model.LocationId" asp-route-From="@(Model.From?.ToString("yyyy-MM-dd"))" asp-route-To="@(Model.To?.ToString("yyyy-MM-dd"))" asp-route-Source="@Model.Source">Sonraki →</a>}else{<span>Son sayfa</span>}</div></section>

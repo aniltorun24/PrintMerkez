@@ -1,0 +1,6 @@
+@model IReadOnlyList<PrintMerkez.Core.PrintJob>
+<div class="table-scroll"><table><thead><tr><th>Kullanıcı / zaman</th><th>Yazıcı / lokasyon</th><th>Baskı adedi</th><th>Renk / kopya</th><th>Durum</th><th>Kaynak</th></tr></thead><tbody>
+@if (Model.Count == 0) { <tr><td colspan="6" class="empty">Bu koşullara uygun baskı kaydı yok.</td></tr> }
+@foreach (var job in Model) {
+<tr><td><strong>@job.Account</strong><small>@job.LocalTime().ToString("dd.MM.yyyy HH:mm")</small></td><td>@job.Printer.Name<small>@job.Location.Name</small></td><td>@(job.Impressions?.ToString("N0") ?? "Bilinmiyor")</td><td>@job.Color.Display()<small>Kopya: @(job.Copies?.ToString() ?? "Bilinmiyor")</small></td><td><span class="badge @(job.Status == PrintJobStatus.Failed ? "error" : "neutral")">@job.Status.Display()</span></td><td><span class="badge @(job.Source == EventSource.Simulation ? "demo" : "neutral")">@(job.Source == EventSource.Simulation ? "Simülasyon" : "Windows")</span></td></tr>
+}</tbody></table></div>

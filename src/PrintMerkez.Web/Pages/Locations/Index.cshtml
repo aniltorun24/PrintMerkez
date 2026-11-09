@@ -1,0 +1,8 @@
+@page
+@model PrintMerkez.Web.Pages.Locations.IndexModel
+@{ ViewData["Title"] = "Lokasyonlar"; }
+<div class="page-heading"><div><div class="eyebrow">KURUM YAPISI</div><h1>Lokasyonlar</h1><p>Mülk ve lokasyon bilgilerini yönetin, yazıcı dağılımını inceleyin.</p></div><a class="button" asp-page="Edit">+ Lokasyon ekle</a></div>
+<div class="panel"><div class="table-scroll"><table><thead><tr><th>Lokasyon</th><th>Yazıcı sayısı</th><th>Kayıt türü</th><th></th></tr></thead><tbody>
+@if(Model.Locations.Count == 0){<tr><td colspan="4" class="empty">Henüz lokasyon eklenmedi.</td></tr>}
+@foreach(var l in Model.Locations){<tr><td><strong>@l.Name</strong></td><td>@Model.Counts.GetValueOrDefault(l.Id)</td><td><span class="badge @(l.IsPlaceholder ? "demo" : "neutral")">@(l.IsPlaceholder ? "Örnek ad" : "Tanımlandı")</span></td><td><a asp-page="Edit" asp-route-id="@l.Id">Düzenle</a></td></tr>}
+</tbody></table></div></div>

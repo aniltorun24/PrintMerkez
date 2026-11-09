@@ -1,0 +1,10 @@
+@page "{id:int?}"
+@model PrintMerkez.Web.Pages.Printers.CreateModel
+@{ ViewData["Title"] = Model.Editing ? "Yazıcıyı düzenle" : "Yazıcı ekle"; }
+<div class="page-heading"><div><div class="eyebrow">ENVANTER</div><h1>@ViewData["Title"]</h1><p>Cihaz bilgilerini kaydedin. Bağlantı ve baskı testi ayrıca gerçekleştirilecek.</p></div></div>
+<form method="post" class="panel form-card"><div asp-validation-summary="All"></div><div class="form-grid">
+<div class="field"><label asp-for="Input.Name">Yazıcı adı</label><input asp-for="Input.Name" /><span asp-validation-for="Input.Name"></span></div>
+<div class="field"><label asp-for="Input.Model">Marka ve tam model</label><input asp-for="Input.Model" placeholder="Olivetti d-COPIA 255MF KX" /></div>
+<div class="field"><label asp-for="Input.LocationId">Lokasyon</label><select asp-for="Input.LocationId"><option value="0">Lokasyon seçin</option>@foreach(var l in Model.Locations){<option value="@l.Id">@l.Name</option>}</select></div>
+<div class="field"><label asp-for="Input.IpAddress">IP adresi</label><input asp-for="Input.IpAddress" placeholder="Henüz bilinmiyorsa boş bırakın" /><span asp-validation-for="Input.IpAddress"></span></div>
+</div><div class="field"><label asp-for="Input.QueueName">Print Server kuyruk adı</label><input asp-for="Input.QueueName" /><p class="help">Sunucuda tanımlandığında doldurulacak. Şimdilik boş bırakılabilir.</p></div><div class="actions"><button class="button" type="submit">Kaydet</button><a asp-page="Index">Vazgeç</a></div></form>
