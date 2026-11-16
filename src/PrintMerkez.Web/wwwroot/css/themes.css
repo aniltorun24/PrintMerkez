@@ -1,0 +1,106 @@
+/* Theme palettes. Layout rules consume these variables in site.css. */
+:root,
+:root[data-theme="light"] {
+    color-scheme: light;
+    --bg: #f5f7fb;
+    --surface: #ffffff;
+    --surface-subtle: #f0f3f8;
+    --ink: #17263e;
+    --muted: #53647c;
+    --line: #d4dce8;
+    --blue: #2d5be3;
+    --accent-hover: #2148bd;
+    --button-text: #ffffff;
+    --control-bg: #ffffff;
+    --control-border: #72819b;
+    --placeholder: #607087;
+    --focus-ring: #2d5be3;
+    --focus-shadow: #dce5ff;
+    --sidebar-bg: #15243d;
+    --sidebar-text: #c6d1e3;
+    --sidebar-muted: #a6b7d1;
+    --sidebar-active: #2a3e60;
+    --sidebar-hover: #263956;
+    --brand-bg: #5277ff;
+    --brand-text: #ffffff;
+    --neutral-bg: #edf1f6;
+    --neutral-text: #435775;
+    --demo-bg: #edeaff;
+    --demo-text: #5a4492;
+    --error-bg: #fff0f0;
+    --error-text: #a52d36;
+    --success-bg: #e8f5ef;
+    --success-text: #246047;
+    --notice-text: #716022;
+    --notice-line: #cfc397;
+}
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #0c1423;
+    --surface: #152238;
+    --surface-subtle: #1b2b44;
+    --ink: #e8eef9;
+    --muted: #b2c1d8;
+    --line: #354861;
+    --blue: #9bbcff;
+    --accent-hover: #bdd2ff;
+    --button-text: #101a2b;
+    --control-bg: #101c2f;
+    --control-border: #7890b3;
+    --placeholder: #a6b7d1;
+    --focus-ring: #9bbcff;
+    --focus-shadow: #293c60;
+    --sidebar-bg: #080f1c;
+    --sidebar-text: #c6d1e3;
+    --sidebar-muted: #a6b7d1;
+    --sidebar-active: #263b5b;
+    --sidebar-hover: #1a2a43;
+    --brand-bg: #476bea;
+    --brand-text: #ffffff;
+    --neutral-bg: #263852;
+    --neutral-text: #d0def2;
+    --demo-bg: #34305a;
+    --demo-text: #ded2ff;
+    --error-bg: #4b2633;
+    --error-text: #ffb7c0;
+    --success-bg: #173e34;
+    --success-text: #a1e5c9;
+    --notice-text: #e5cf90;
+    --notice-line: #6c5b33;
+}
+
+:root[data-theme="purple"] {
+    color-scheme: dark;
+    --bg: #160f23;
+    --surface: #251b37;
+    --surface-subtle: #302244;
+    --ink: #f3ecfc;
+    --muted: #c8b8dc;
+    --line: #503b68;
+    --blue: #c5a4ff;
+    --accent-hover: #ddc8ff;
+    --button-text: #20122f;
+    --control-bg: #1d142b;
+    --control-border: #a38abd;
+    --placeholder: #c0acce;
+    --focus-ring: #c5a4ff;
+    --focus-shadow: #4c3567;
+    --sidebar-bg: #100a1a;
+    --sidebar-text: #ded0ef;
+    --sidebar-muted: #bdabd4;
+    --sidebar-active: #493264;
+    --sidebar-hover: #302042;
+    --brand-bg: #7951c7;
+    --brand-text: #ffffff;
+    --neutral-bg: #3d2d51;
+    --neutral-text: #e5d8f5;
+    --demo-bg: #493362;
+    --demo-text: #ead9ff;
+    --error-bg: #512638;
+    --error-text: #ffc1cc;
+    --success-bg: #233f36;
+    --success-text: #b0ebcd;
+    --notice-text: #e6cf9b;
+    --notice-line: #6d593c;
+}

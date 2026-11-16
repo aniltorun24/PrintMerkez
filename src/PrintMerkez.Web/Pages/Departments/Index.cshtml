@@ -1,0 +1,9 @@
+@page "{id:int?}"
+@model PrintMerkez.Web.Pages.Departments.IndexModel
+@{ ViewData["Title"] = "Departmanlar"; }
+<div class="page-heading"><div><div class="eyebrow">KURUM YAPISI</div><h1>Departmanlar</h1><p>Kullanıcıları raporlama için departmanlarla eşleştirin.</p></div></div>
+<div class="management-grid"><section class="panel"><div class="panel-heading"><h2>Departman listesi</h2><span class="help">En fazla 500 kayıt</span></div><div class="table-scroll"><table><thead><tr><th>Departman</th><th>Durum</th><th></th></tr></thead><tbody>
+@if(Model.Departments.Count == 0){<tr><td colspan="3" class="empty">Henüz departman tanımlanmadı.</td></tr>}
+@foreach(var d in Model.Departments){<tr><td>@d.Name</td><td><span class="badge neutral">@(d.IsActive ? "Aktif" : "Pasif")</span></td><td><a asp-route-id="@d.Id">Düzenle</a></td></tr>}
+</tbody></table></div></section>
+<form method="post" class="panel padded"><h2>@(Model.EditingId.HasValue ? "Departmanı düzenle" : "Departman ekle")</h2><div asp-validation-summary="All"></div><div class="field"><label asp-for="Input.Name">Departman adı</label><input asp-for="Input.Name" /></div><label class="checkbox"><input asp-for="Input.IsActive" /> Aktif departman</label><p class="help">Geçmiş kayıtları korumak için silmek yerine pasifleştirebilirsiniz.</p><div class="actions"><button class="button" type="submit">Kaydet</button><a asp-route-id="">Yeni kayıt</a></div></form></div>

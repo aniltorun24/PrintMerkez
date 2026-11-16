@@ -6,3 +6,17 @@
 .dev-agent-key
 *.user
 tmp/
+runtime/
+output/
+*.db
+*.db-*
+*.db.*
+*.sqlite
+*.sqlite3
+*.bak
+*.log
+*.zip
+appsettings.Local.json
+.env
+.env.*
+!.env.example

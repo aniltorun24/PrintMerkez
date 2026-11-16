@@ -10,6 +10,8 @@ public sealed class SimulationWorker(HttpClient client, IConfiguration config, I
     {
         var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
         options.Converters.Add(new JsonStringEnumConverter());
+        if (!Enum.TryParse<PrintColor>(config["Agent:Color"] ?? "Unknown", true, out var color) || !Enum.IsDefined(color))
+            throw new InvalidOperationException("Simülasyon rengi Unknown, Monochrome veya Color olmalı.");
         PrintEventRequest? pending = null;
         while (!stoppingToken.IsCancellationRequested)
         {
@@ -18,7 +20,7 @@ public sealed class SimulationWorker(HttpClient client, IConfiguration config, I
                 EventId = Guid.NewGuid().ToString("N"), Server = "LOCAL-SIMULATOR",
                 PrinterId = config.GetValue("Agent:PrinterId", 1), Account = "ORNEK\\simulator",
                 OccurredAt = DateTimeOffset.UtcNow, Impressions = Random.Shared.Next(1,21),
-                Copies = 1, Color = PrintColor.Unknown, Status = PrintJobStatus.QueueCompleted, Source = EventSource.Simulation
+                Copies = 1, Color = color, Status = PrintJobStatus.QueueCompleted, Source = EventSource.Simulation
             };
             try
             {

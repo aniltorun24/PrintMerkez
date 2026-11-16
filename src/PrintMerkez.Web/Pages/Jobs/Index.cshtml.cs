@@ -11,7 +11,7 @@ public class IndexModel(PrintDbContext db) : PageModel
     [BindProperty(SupportsGet = true)] public int? LocationId { get; set; }
     [BindProperty(SupportsGet = true)] public DateTime? From { get; set; }
     [BindProperty(SupportsGet = true)] public DateTime? To { get; set; }
-    [BindProperty(SupportsGet = true)] public EventSource? Source { get; set; }
+    [BindProperty(SupportsGet = true)] public EventSource? Source { get; set; } = EventSource.WindowsPrintService;
     [BindProperty(SupportsGet = true)] public int PageNumber { get; set; } = 1;
     public List<Location> Locations { get; private set; } = [];
     public List<PrintJob> Jobs { get; private set; } = [];
@@ -50,9 +50,9 @@ public class IndexModel(PrintDbContext db) : PageModel
         var query = Filter();
         if (await query.CountAsync() > 5000) return BadRequest("Dışa aktarım için filtreleri daraltın. Sınır 5.000 kayıt.");
         var records = await query.OrderByDescending(x => x.OccurredAtUtc).ThenByDescending(x => x.Id).ToListAsync();
-        var csv = new StringBuilder("Kullanıcı;Zaman (Türkiye);Yazıcı;Lokasyon;Bildirilen baskı adedi;Kopya;Renk;Durum;Kaynak\r\n");
+        var csv = new StringBuilder("Kullanıcı;Zaman (Türkiye);Yazıcı;Lokasyon;Toplam baskı yüzü;Windows belge sayfası;Kopya;Baskı rengi;Durum;Kaynak;Ad soyad;Departman;Hesaplanan tutar (TL);Maliyet durumu;Windows renk talebi\r\n");
         foreach (var j in records)
-            csv.AppendLine(string.Join(';', new[] { j.Account, j.LocalTime().ToString("yyyy-MM-dd HH:mm:ss"), j.Printer.Name, j.Location.Name, j.Impressions?.ToString() ?? "Bilinmiyor", j.Copies?.ToString() ?? "Bilinmiyor", j.Color.Display(), j.Status.Display(), j.Source == EventSource.Simulation ? "Simülasyon" : "Windows" }.Select(CsvCell)));
+            csv.AppendLine(string.Join(';', new[] { j.Account, j.LocalTime().ToString("yyyy-MM-dd HH:mm:ss"), j.Printer.Name, j.Location.Name, j.Impressions?.ToString() ?? "Doğrulanmadı", j.ReportedDocumentPages?.ToString() ?? "Bilinmiyor", j.Copies?.ToString() ?? "Bilinmiyor", j.Color.Display(), j.Status.Display(), j.Source == EventSource.Simulation ? "Simülasyon" : "Windows", j.UserDisplayName ?? "Eşleşmedi", j.DepartmentName ?? "Eşleşmedi", j.CostKurus.HasValue ? (j.CostKurus.Value / 100m).ToString("F2") : "Hesaplanmadı", PrintMerkez.Web.Services.CostCalculator.Label(j.CostState), j.RequestedColor.Display() }.Select(CsvCell)));
         return File(Encoding.UTF8.GetPreamble().Concat(Encoding.UTF8.GetBytes(csv.ToString())).ToArray(), "text/csv; charset=utf-8", "baski-kayitlari.csv");
     }
     private static string CsvCell(string s)

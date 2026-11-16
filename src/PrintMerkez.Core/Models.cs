@@ -35,11 +35,24 @@ public sealed class PrintJob
     public int LocationId { get; set; }
     public Location Location { get; set; } = null!;
     public string Account { get; set; } = "";
+    public string NormalizedAccount { get; set; } = "";
+    public int? DirectoryUserId { get; set; }
     public DateTime OccurredAtUtc { get; set; }
+    public string? UserDisplayName { get; set; }
+    public string? DepartmentName { get; set; }
+    public long? CostKurus { get; set; }
+    public int? AppliedUnitKurus { get; set; }
+    public int? AppliedTariffId { get; set; }
+    public CostState CostState { get; set; }
     // Total reported impressions including copies, not physical sheets. Null = unknown.
     public int? Impressions { get; set; }
+    // Windows 307 page field is kept separately; it is not a verified total including copies.
+    public int? ReportedDocumentPages { get; set; }
     public int? Copies { get; set; }
+    public string? DeviceJobKey { get; set; }
+    public DateTime? CountVerifiedAtUtc { get; set; }
     public PrintColor Color { get; set; }
+    public PrintColor RequestedColor { get; set; }
     public PrintJobStatus Status { get; set; } = PrintJobStatus.Unknown;
     public EventSource Source { get; set; }
 }
@@ -52,8 +65,10 @@ public sealed class PrintEventRequest
     [Required, StringLength(160)] public string Account { get; set; } = "";
     public DateTimeOffset OccurredAt { get; set; }
     [Range(1, 1_000_000)] public int? Impressions { get; set; }
+    [Range(1, 1_000_000)] public int? ReportedDocumentPages { get; set; }
     [Range(1, 100_000)] public int? Copies { get; set; }
     [EnumDataType(typeof(PrintColor))] public PrintColor Color { get; set; }
+    [EnumDataType(typeof(PrintColor))] public PrintColor RequestedColor { get; set; }
     [EnumDataType(typeof(PrintJobStatus))] public PrintJobStatus Status { get; set; } = PrintJobStatus.Unknown;
     [EnumDataType(typeof(EventSource))] public EventSource Source { get; set; }
 }

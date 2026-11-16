@@ -1,10 +1,31 @@
 <!DOCTYPE html>
-<html lang="tr"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@ViewData["Title"] · PrintMerkez</title><link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head>
+<html lang="tr"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@ViewData["Title"] · PrintMerkez</title><script src="~/js/theme.js" asp-append-version="true"></script>
+<link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head>
 <body><aside class="sidebar"><a class="brand" asp-page="/Index"><span class="brand-icon">P</span> PrintMerkez</a><div class="workspace-label">MERKEZİ YAZICI YÖNETİMİ</div><nav aria-label="Ana gezinme">
 <a asp-page="/Index" class="@(Context.Request.Path == "/" ? "active" : "")">◫ &nbsp; Genel bakış</a>
 <a asp-page="/Printers/Index" class="@(Context.Request.Path.StartsWithSegments("/Printers") ? "active" : "")">▤ &nbsp; Yazıcı envanteri</a>
 <a asp-page="/Locations/Index" class="@(Context.Request.Path.StartsWithSegments("/Locations") ? "active" : "")">⌖ &nbsp; Lokasyonlar</a>
-<a asp-page="/Jobs/Index" class="@(Context.Request.Path.StartsWithSegments("/Jobs") ? "active" : "")">≡ &nbsp; Baskı geçmişi</a></nav><div class="sidebar-note">● Yerel geliştirme ortamı<br /><small>İlk geliştirme adımı · v0.1</small></div></aside>
-<div class="main-shell"><header class="topbar"><span>Kurumsal baskı yönetimi</span><span class="environment">GELİŞTİRME</span></header><main><div class="notice"><strong>Geliştirme ortamı.</strong> Simülasyon kayıtları ve örnek lokasyonlar etiketlidir. Cihaz bağlantısı ve AD henüz etkin değil.</div>
+<a asp-page="/Jobs/Index" class="@(Context.Request.Path.StartsWithSegments("/Jobs") ? "active" : "")">≡ &nbsp; Baskı geçmişi</a>
+<a asp-page="/Users/Index" class="@(Context.Request.Path.StartsWithSegments("/Users") ? "active" : "")">◉ &nbsp; Kullanıcılar</a>
+<a asp-page="/Departments/Index" class="@(Context.Request.Path.StartsWithSegments("/Departments") ? "active" : "")">▦ &nbsp; Departmanlar</a>
+<a asp-page="/Tariffs/Index" class="@(Context.Request.Path.StartsWithSegments("/Tariffs") ? "active" : "")">₺ &nbsp; Maliyet tarifeleri</a>
+<a asp-page="/Managers/Index" class="@(Context.Request.Path.StartsWithSegments("/Managers") ? "active" : "")">♙ &nbsp; Yönetici atamaları</a>
+<a asp-page="/Notifications/Index" class="@(Context.Request.Path.StartsWithSegments("/Notifications") ? "active" : "")">✉ &nbsp; Baskı uyarıları</a>
+<a asp-page="/Audit/Index" class="@(Context.Request.Path.StartsWithSegments("/Audit") ? "active" : "")">↺ &nbsp; Denetim kayıtları</a></nav><div class="sidebar-note">● Yerel geliştirme ortamı<br /><small>Yönetim ve maliyet · v0.2</small></div></aside>
+<div class="main-shell"><header class="topbar">
+    <span class="topbar-title">Kurumsal baskı yönetimi</span>
+    <div class="topbar-actions">
+        <div id="theme-picker" class="theme-picker" hidden>
+            <label for="theme-select">Tema</label>
+            <select id="theme-select">
+                <option value="light">Açık</option>
+                <option value="dark">Koyu</option>
+                <option value="purple">Mor</option>
+            </select>
+        </div>
+        <span class="environment">GELİŞTİRME</span>
+    </div>
+    <span id="theme-status" class="sr-only" role="status" aria-live="polite"></span>
+</header><main><div class="notice"><strong>Yerel pilot ortamı.</strong> Print server bağlantı durumu genel bakış ekranından izlenir. AD ile giriş henüz etkin değil.</div>
 @if (TempData["Success"] is string message) { <div class="success" role="status">@message</div> }
 @RenderBody()</main><footer>PrintMerkez <span>Merkezi görünürlük, kontrollü baskı.</span></footer></div>@await RenderSectionAsync("Scripts", required: false)</body></html>

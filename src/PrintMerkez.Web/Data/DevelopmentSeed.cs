@@ -14,7 +14,7 @@ public static class DevelopmentSeed
 
     public static async Task InitializeAsync(PrintDbContext db, bool demo)
     {
-        await db.Database.EnsureCreatedAsync();
+        await DatabaseBootstrap.InitializeAsync(db);
         if (!demo) return;
         var existing = await db.Locations.ToListAsync();
         if (existing.Count > 0)

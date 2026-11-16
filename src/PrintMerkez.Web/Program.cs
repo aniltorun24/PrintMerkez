@@ -14,7 +14,18 @@ if (!builder.Environment.IsDevelopment() && !builder.Environment.IsEnvironment("
 var culture = CultureInfo.GetCultureInfo("tr-TR");
 CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages();
+builder.Services.AddScoped<IUsageMailSender, UsageMailSender>();
+builder.Services.AddScoped<NotificationProcessor>();
+builder.Services.AddHostedService<NotificationWorker>();
+builder.Services.AddSingleton<WindowsCollectorStatus>();
+builder.Services.AddSingleton<IWindowsPrintReader, WindowsPrintReader>();
+builder.Services.AddHostedService<WindowsCollector>();
+builder.Services.AddSingleton<IDeviceJobLogClient, OlivettiDeviceJobLogClient>();
+builder.Services.AddSingleton<DeviceCollectorStatus>();
+builder.Services.AddHostedService<DeviceCopyCollector>();
+builder.Services.AddHostedService<BackgroundStopMonitor>();
 builder.Services.ConfigureHttpJsonOptions(o => o.SerializerOptions.Converters.Add(new JsonStringEnumConverter()));
 var dataDirectory = Path.Combine(builder.Environment.ContentRootPath, "App_Data");
 Directory.CreateDirectory(dataDirectory);
@@ -22,8 +33,24 @@ builder.Services.AddDbContext<PrintDbContext>(o => o.UseSqlite(builder.Configura
     ?? $"Data Source={Path.Combine(dataDirectory, "printmerkez.db")}"));
 var app = builder.Build();
 using (var scope = app.Services.CreateScope())
-    await DevelopmentSeed.InitializeAsync(scope.ServiceProvider.GetRequiredService<PrintDbContext>(),
-        builder.Configuration.GetValue("Development:SeedDemoData", true));
+{
+    var db = scope.ServiceProvider.GetRequiredService<PrintDbContext>();
+    if (builder.Configuration.GetValue("Maintenance:RemoveDemoData", false))
+    {
+        await DatabaseBootstrap.InitializeAsync(db);
+        var backup = await DemoDataCleanup.BackupAsync(db, Path.Combine(dataDirectory, "backups"));
+        await DemoDataCleanup.RemoveAsync(db);
+        Console.WriteLine($"Örnek veriler temizlendi. Yedek: {backup}");
+        return;
+    }
+    var seedDemo = builder.Configuration.GetValue("Development:SeedDemoData", true);
+    await DevelopmentSeed.InitializeAsync(db, seedDemo);
+    if (seedDemo && builder.Configuration.GetValue("Development:SeedScenarioData", false))
+        {
+        await ScenarioSeed.InitializeAsync(db);
+        await NotificationDemoSeed.InitializeAsync(db);
+    }
+}
 app.Use(async (context, next) =>
 {
     var remote = context.Connection.RemoteIpAddress;
@@ -37,7 +64,12 @@ app.Use(async (context, next) =>
 app.UseStaticFiles();
 app.UseRouting();
 app.MapRazorPages();
-app.MapGet("/health", () => Results.Ok(new { Status = "ok", Mode = "LocalDevelopment" }));
+app.MapGet("/health", (WindowsCollectorStatus windows, DeviceCollectorStatus device) => Results.Ok(new
+{
+    Status = "ok", Mode = "LocalDevelopment",
+    BackgroundManaged = !string.IsNullOrWhiteSpace(builder.Configuration["Background:StopFile"]),
+    WindowsCollector = windows.Current, DeviceCollector = device.Current
+}));
 app.MapPost("/api/v1/print-events", EventIngestion.AcceptAsync).AddEndpointFilter(async (context, next) =>
 {
     var expected = builder.Configuration["Agent:ApiKey"];
@@ -46,7 +78,11 @@ app.MapPost("/api/v1/print-events", EventIngestion.AcceptAsync).AddEndpointFilte
     var supplied = context.HttpContext.Request.Headers["X-Agent-Key"].ToString();
     var valid = CryptographicOperations.FixedTimeEquals(SHA256.HashData(Encoding.UTF8.GetBytes(expected)),
         SHA256.HashData(Encoding.UTF8.GetBytes(supplied)));
-    return valid ? await next(context) : Results.Unauthorized();
+    if (!valid) return Results.Unauthorized();
+    if (context.Arguments[0] is PrintMerkez.Core.PrintEventRequest { Source: PrintMerkez.Core.EventSource.Simulation }
+        && !builder.Configuration.GetValue("Agent:AllowSimulation", false))
+        return Results.ValidationProblem(new Dictionary<string, string[]> { ["Source"] = ["Gerçek veri modunda simülasyon kabul edilmez."] });
+    return await next(context);
 });
 app.Run();
 public partial class Program;

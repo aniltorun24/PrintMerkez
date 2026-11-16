@@ -22,6 +22,11 @@ public sealed class AppFactory : WebApplicationFactory<Program>
         builder.ConfigureAppConfiguration((_, config) => config.AddInMemoryCollection(new Dictionary<string,string?>
         {
             ["ConnectionStrings:PrintDb"] = $"Data Source={database};Pooling=False",
+            ["Notifications:WorkerEnabled"] = "false",
+            ["WindowsCollector:Enabled"] = "false",
+            ["DeviceCollector:Enabled"] = "false",
+            ["Agent:AllowSimulation"] = "true",
+            ["Development:SeedScenarioData"] = "false",
             ["Development:SeedDemoData"] = "true", ["Agent:ApiKey"] = Key
         }));
     }
@@ -117,7 +122,7 @@ public sealed class WorkflowTests
         using var app = new AppFactory(); using var client = Client(app);
         var e = Event(); e.Account = "=formula-test";
         await client.PostAsJsonAsync("/api/v1/print-events", e, Json);
-        var csv = await client.GetStringAsync("/Jobs?handler=Export&Search=formula-test");
+        var csv = await client.GetStringAsync("/Jobs?handler=Export&Source=Simulation&Search=formula-test");
         Assert.Contains("'=formula-test", csv); Assert.DoesNotContain("kullanici1", csv);
         var empty = await client.GetStringAsync("/Jobs?handler=Export&Source=WindowsPrintService");
         Assert.DoesNotContain("formula-test", empty);

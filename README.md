@@ -1,6 +1,27 @@
 # PrintMerkez
 
-11 lokasyonlu kurum için merkezi yazıcı yönetimi uygulaması. İlk geliştirme adımı: sunucu kurulumu beklenmeden çalışan Razor Pages paneli, kalıcı envanter ve olay kabul API'si.
+Başka bilgisayarda devam etmek için: [Klonlama, veri taşıma ve başlatma](docs/yeni-bilgisayarda-baslatma.md).
+
+11 lokasyonlu kurum için merkezi yazıcı yönetimi uygulaması. Sunucu kurulumu beklenmeden çalışan Razor Pages paneli, kalıcı envanter, kullanıcı/departman dizini, tarihli maliyet tarifeleri, denetim geçmişi ve olay kabul API'si.
+
+Güncel özellikler, veri yükseltme ve deneme akışı: [v0.2 kullanım notları](docs/v0.2-yonetim-ve-maliyet.md).
+
+İlişkili otomatik test verileri: [Örnek veri paketi](docs/ornek-veri-paketi.md).
+
+Aylık yönetici bildirimleri: [Kullanım, eşleştirme ve SMTP ayarları](docs/aylik-yonetici-bildirimleri.md).
+
+Gerçek print server için salt okunur ilk kontrol: [Print server pilotu](docs/print-server-pilotu.md).
+
+**12 Kasım güncellemesi:** [Gerçek baskı aktarımı](docs/gercek-baski-aktarimi.md) eklendi. Örnek veri üretimi kapalıdır;
+simülasyon API'de varsayılan olarak reddedilir. Aşağıdaki eski simülasyon örnekleri yalnızca ayrı test yapılandırması içindir.
+
+**13 Kasım güncellemesi:** Olivetti pilotunda [kopya ve toplamın cihaz iş kaydıyla doğrulanması](docs/cihaz-kopya-dogrulamasi.md)
+eklendi. Windows belge sayfası ile kopyalar dahil toplam birbirinden ayrıdır.
+
+Renk ve tarife entegrasyonu: [Gerçek baskı rengi ve maliyet hesabı](docs/baski-rengi-ve-maliyet.md).
+
+**14 Kasım güncellemesi:** [Geliştirme bilgisayarında otomatik arka plan çalışması](docs/yerel-arka-plan.md)
+kuruldu. Sunucu adı `Moi-PrintSrv` olarak güncellendi; eski olaylar ve mevcut yazıcı envanteri korundu.
 
 ## Başlatma
 
@@ -40,19 +61,19 @@ Simülatör her 10 saniyede örnek baskı olayı gönderir. Gerçek yazıcıya b
 
 ## Veri anlamı
 
-Başlangıçta 12 simülasyon olayı yüklenir. Bunlar her satırda etiketlenir; panel toplamları simülasyonları içerir. Gerçek kayıtlar için geçmiş ekranındaki kaynak filtresini kullanın. Lokasyon adları paylaşılan mülk listesinden alınmıştır. Pilot yazıcı ilk lokasyona örnek olarak eşleştirilmiştir; gerçek cihaz konumu henüz doğrulanmamıştır.
+Başlangıçta 12 simülasyon olayı yüklenir ve etiketlenir. Panel ve geçmiş varsayılan olarak Windows kayıtlarını gösterir. Örnekleri incelemek için kaynak filtresinden Simülasyon seçin. Lokasyon adları paylaşılan mülk listesinden alınmıştır. Pilot yazıcı ilk lokasyona örnek olarak eşleştirilmiştir; gerçek cihaz konumu henüz doğrulanmamıştır.
 
 Impressions: kopyalar dahil raporlanan toplam baskı yüzü. Fiziksel kağıt adedi değildir ve Copies ile tekrar çarpılmaz. Bilinmeyen adet, kopya ve renk bilgileri sıfır olarak kabul edilmez. QueueCompleted yalnızca kuyruk durumudur; fiziksel çıktı kanıtı değildir. Olay zamanı UTC saklanır, arayüz ve tarih filtreleri Europe/Istanbul kullanır. Yazıcı taşındığında baskı kaydının eski lokasyonu korunur. Belge içeriği ve belge başlığı toplanmaz.
 
 Development:SeedDemoData=false ayarı (PowerShell'de $env:Development__SeedDemoData='false') yeni boş veritabanında örnek veri yüklenmesini kapatır. Var olan örnek kayıtları silmez. Temiz deneme için farklı bir SQLite yolu ConnectionStrings:PrintDb ayarıyla verilebilir. Başlangıç verileri boş lokasyon tablosuna eklenir. Önceki sürümdeki değiştirilmemiş Lokasyon 01–11 kayıtları yeni adlarla güncellenir; kimlikleri ve ilişkileri korunur. Kullanıcının düzenlediği lokasyon adları değiştirilmez.
 
-Bu ilk sürümde EnsureCreated kullanılır; şema yükseltme/migration uygulanmaz. Gerçek pilot verisi toplanmadan önce veritabanı seçimi ve EF migration geçişi tamamlanmalıdır. SQLite yerel geliştirme içindir; 11 lokasyonun üretim veritabanı kararı değildir.
+EF Core migration kullanılır. Bilinen v0.1 veritabanı yedeklenip veri kaybı olmadan yükseltilir; ayrıntılar v0.2 notlarındadır. SQLite yerel geliştirme içindir; 11 lokasyonun üretim veritabanı kararı değildir.
 
 ## Çözüm yapısı
 
 - src/PrintMerkez.Core: veri modelleri, olay sözleşmesi ve etiketler.
 - src/PrintMerkez.Web: Razor Pages, olay kabul API'si, EF Core ve yerel SQLite.
-- src/PrintMerkez.Agent: açıkça etkinleştirilen olay simülatörü; Windows ajanının başlangıç projesi.
+- src/PrintMerkez.Agent: açıkça etkinleştirilen olay simülatörü ve tek seferlik, salt okunur Windows PrintService pilot okuyucusu. Sürekli Windows ajanı henüz değildir.
 - tests/PrintMerkez.Tests: gerçek HTTP/form ve SQLite iş akışı testleri.
 
 UI ve API aynı ASP.NET Core uygulamasındadır. Razor sayfaları veritabanını sunucu tarafında kullanır; kendi API'sine HTTP çağrısı yapmaz. Ajan API'ye olay gönderir. Worker henüz Windows Service olarak kurulmaz.
@@ -93,12 +114,12 @@ Testler birbirinden ayrı geçici SQLite dosyaları kullanır; geliştirme envan
 
 ## Sıradaki işler
 
-1. Windows PrintService olaylarını örnek XML üzerinden okuyacak ayrıştırıcı ve testler; gerçek sunucuda alan doğrulaması.
+1. Windows PrintService 307 ayrıştırıcısı ve web içi kalıcı devam noktasıyla aktarım eklendi; çoklu kopya/çift taraflı cihaz doğrulaması ve uzun kesinti pilotu sürer.
 2. Yerel kalıcı ajan tamponu, yeniden başlatma sonrası devam ve bağlantı kopması testleri.
 3. AD hesabı/departman eşleştirme, yönetici/rapor rolleri ve oturum açma.
-4. Birim maliyet tarifeleri ve bilinmeyen metadata için hesaplama politikası.
+4. Maliyet mutabakatı, ek raporlar ve tarihsel verinin kontrollü tamamlama politikası (tarihli tarifeler eklendi).
 5. Baskı öncesi denetim için ayrı teknik pilot; yetki ve kota rezervasyonu/sonlandırma.
-6. Lokasyon bazlı sunucu/ajan yapılandırması, merkezi veritabanı ve migration.
+6. Lokasyon bazlı sunucu/ajan yapılandırması ve merkezi veritabanı seçimi (SQLite migration eklendi).
 7. Toner/sayaç, PIN/kart, beklet-bırak, fotokopi/tarama için model ve üretici API/SDK doğrulaması.
 
 Sunucu kurulumu altyapı ekibinin sorumluluğundadır. Sunucu açıldığında ilk entegrasyon: SRV-PRINT üzerindeki Olivetti kuyruğundan bir test olayını API'ye aktarmak ve kullanıcı/zaman/adet alanlarını karşılaştırmak. Bu sürüm gerçek baskıyı izleme veya engelleme iddiasında bulunmaz.
