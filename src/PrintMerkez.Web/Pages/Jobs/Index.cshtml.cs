@@ -7,6 +7,14 @@ using PrintMerkez.Web.Data;
 namespace PrintMerkez.Web.Pages.Jobs;
 public class IndexModel(PrintDbContext db) : PageModel
 {
+    public async Task<IActionResult> OnGetLiveAsync([FromServices] PrintMerkez.Web.Services.LiveUpdates live)
+    {
+        var unchanged = PrintMerkez.Web.Services.LiveUpdates.NotModified(this, live);
+        if (unchanged is not null) return unchanged;
+        await OnGetAsync();
+        if (!ModelState.IsValid) return BadRequest("Geçersiz filtre.");
+        return Partial("_JobsLive", this);
+    }
     [BindProperty(SupportsGet = true)] public string? Search { get; set; }
     [BindProperty(SupportsGet = true)] public int? LocationId { get; set; }
     [BindProperty(SupportsGet = true)] public DateTime? From { get; set; }

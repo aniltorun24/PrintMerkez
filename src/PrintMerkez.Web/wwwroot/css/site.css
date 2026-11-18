@@ -183,3 +183,10 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.6 Consolas, m
 /* Multi-action notification controls must wrap on small screens. */
 .actions { flex-wrap: wrap; }
 @media (max-width:700px) { .sidebar nav a { white-space:normal; } }
+
+.live-toolbar {display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0;color:var(--muted,#53637b);font-size:.88rem;}
+.live-toolbar button {margin-left:auto;}
+.live-indicator {width:9px;height:9px;border-radius:50%;background:#9c7a25;flex:none;}
+.live-toolbar[data-state="live"] .live-indicator {background:#26854d;}
+.live-toolbar[data-state="error"] .live-indicator {background:#c94b49;}
+.live-toolbar[data-state="paused"] .live-indicator {background:#788598;}

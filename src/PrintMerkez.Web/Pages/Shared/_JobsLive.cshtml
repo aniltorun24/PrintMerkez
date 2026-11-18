@@ -1,0 +1,5 @@
+@model PrintMerkez.Web.Pages.Jobs.IndexModel
+<section class="panel"><div class="panel-heading"><h2>@Model.Total.ToString("N0") kayıt</h2><span class="help">Sayfa başına 25 kayıt</span></div><partial name="_JobsTable" model="Model.Jobs" /><div class="pagination">
+@if(Model.PageNumber > 1){<a asp-route-PageNumber="@(Model.PageNumber-1)" asp-route-Search="@Model.Search" asp-route-LocationId="@Model.LocationId" asp-route-From="@(Model.From?.ToString("yyyy-MM-dd"))" asp-route-To="@(Model.To?.ToString("yyyy-MM-dd"))" asp-route-Source="@Model.Source">← Önceki</a>}else{<span>Başlangıç</span>}
+<span>@Model.PageNumber / @Model.TotalPages</span>
+@if(Model.PageNumber < Model.TotalPages){<a asp-route-PageNumber="@(Model.PageNumber+1)" asp-route-Search="@Model.Search" asp-route-LocationId="@Model.LocationId" asp-route-From="@(Model.From?.ToString("yyyy-MM-dd"))" asp-route-To="@(Model.To?.ToString("yyyy-MM-dd"))" asp-route-Source="@Model.Source">Sonraki →</a>}else{<span>Son sayfa</span>}</div></section>

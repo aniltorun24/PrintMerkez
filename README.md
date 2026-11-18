@@ -1,5 +1,7 @@
 # PrintMerkez
 
+Genel bakış ve baskı geçmişi için [sayfa yenilemeden canlı izleme](docs/canli-ekranlar.md) eklendi.
+
 Başka bilgisayarda devam etmek için: [Klonlama, veri taşıma ve başlatma](docs/yeni-bilgisayarda-baslatma.md).
 
 11 lokasyonlu kurum için merkezi yazıcı yönetimi uygulaması. Sunucu kurulumu beklenmeden çalışan Razor Pages paneli, kalıcı envanter, kullanıcı/departman dizini, tarihli maliyet tarifeleri, denetim geçmişi ve olay kabul API'si.

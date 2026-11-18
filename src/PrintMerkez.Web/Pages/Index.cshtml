@@ -5,25 +5,6 @@
 @{ ViewData["Title"] = "Genel bakış"; }
 <div class="page-heading"><div><div class="eyebrow">YÖNETİM PANELİ</div><h1>Baskı altyapınıza genel bakış</h1><p>Lokasyon, veri kalitesi ve maliyetleri seçilen kayıt kaynağına göre izleyin.</p></div><a class="button" asp-page="/Printers/Create">+ Yazıcı ekle</a></div>
 <form method="get" class="filters source-filter"><label>Kayıt kaynağı<select asp-for="Source"><option value="WindowsPrintService">Windows kayıtları</option><option value="Simulation">Simülasyon kayıtları</option></select></label><button class="button secondary">Göster</button></form><div asp-validation-summary="All"></div>
-@{ var collector = CollectorStatus.Current; }
-@if (collector.Enabled)
-{
-    <section class="panel padded" aria-label="Gerçek baskı aktarımı">
-        <h2>Print server bağlantısı</h2>
-        @if (collector.Error is not null) { <p role="alert"><strong>Aktarım bekliyor.</strong> @collector.Error</p> }
-        else if (collector.LastCheckUtc is null) { <p>İlk bağlantı kontrol ediliyor.</p> }
-        else { <p><strong>Bağlantı çalışıyor.</strong> Son başarılı kontrol: @TimeZoneInfo.ConvertTimeFromUtc(collector.LastCheckUtc.Value, TimeZoneInfo.FindSystemTimeZoneById("Europe/Istanbul")).ToString("dd.MM.yyyy HH:mm:ss"). Yeni kayıtlar 10 saniyede bir alınır; güncel toplamlar için sayfayı yenileyin.</p> }
-        @if (collector.Warning is not null) { <p role="alert">@collector.Warning</p> }
-        <p>Windows belge sayfası ayrı gösterilir. Kopya bilgisi doğrulanmadığında toplam çıktı bilinmiyor kalır; aylık adede ve maliyete katılmaz.</p>
-        @if(DeviceStatus.Current.Enabled)
-        {
-            @if(DeviceStatus.Current.Error is string deviceError){<p role="alert">@deviceError</p>}
-            else {<p>Kopya ve toplam bilgisi yazıcının iş geçmişinden yaklaşık 30 saniyede bir kontrol edilir. Kullanıcı ve zaman eşleşmesi tek bir işi göstermiyorsa bilgi tamamlanmaz.</p>}
-        }
-    </section>
-}
-@if(Model.Source == EventSource.Simulation){<p class="explanation"><strong>Simülasyon görünümü.</strong> Bu toplamlar gerçek kurum kullanımını göstermez.</p>}
-<section class="stats" aria-label="Özet göstergeler"><article><div class="stat-label">Lokasyon</div><div class="stat-value">@Model.Locations.ToString("N0")</div><div class="stat-note">Tanımlı mülk ve lokasyonlar</div></article><article><div class="stat-label">Kayıtlı yazıcı</div><div class="stat-value">@Model.Printers.ToString("N0")</div><div class="stat-note">Çevrimiçi durumu henüz ölçülmüyor</div></article><article><div class="stat-label">Baskı olayı</div><div class="stat-value">@Model.Events.ToString("N0")</div><div class="stat-note">Yalnızca seçilen kaynak</div></article><article><div class="stat-label">Toplamı bilinen baskı yüzü</div><div class="stat-value">@(Model.Events > 0 && Model.Events == Model.UnknownImpressions ? "Bilinmiyor" : Model.Impressions.ToString("N0"))</div><div class="stat-note">@Model.UnknownImpressions kayıtta toplam doğrulanmadı</div></article></section>
-<div class="two-columns"><section class="panel padded"><div class="eyebrow">TARİFEYE GÖRE</div><h2>Hesaplanan toplam tutar</h2><div class="stat-value cost-value">@(Model.CostKurus.HasValue ? (Model.CostKurus.Value / 100m).ToString("N2") + " ₺" : "Henüz hesaplanmadı")</div><p>@Model.PricedJobs kayıt hesaplandı. @Model.MissingCosts kayıtta maliyet eksik. Toplam yalnızca hesaplanan kayıtları içerir; fiziksel baskı ve fatura mutabakatı değildir.</p><a asp-page="/Tariffs/Index">Tarifeleri yönet →</a></section><section class="panel padded"><div class="eyebrow">VERİ KALİTESİ</div><h2>Kullanıcı eşleştirme</h2><div class="stat-value cost-value">@Model.UnmappedUsers eşleşmemiş kayıt</div><p>Hesap ve departman bilgilerini kullanıcı dizininde hazırlayın. Geçmiş kayıtlar otomatik olarak yeniden eşleştirilmez.</p><a asp-page="/Users/Index">Kullanıcı dizinini aç →</a></section></div>
-<section class="panel"><div class="panel-heading"><div><h2>Son baskı hareketleri</h2><p>Seçilen kaynak · Türkiye saati</p></div><a asp-page="/Jobs/Index" asp-route-Source="@Model.Source">Tüm kayıtları gör →</a></div><partial name="_JobsTable" model="Model.RecentJobs" /></section>
-<section class="panel"><div class="panel-heading"><h2>Lokasyon dağılımı</h2><span class="help">Seçilen kaynak · tüm dönem</span></div><div class="table-scroll"><table><thead><tr><th>Lokasyon</th><th>Olay</th><th>Toplamı bilinen yüz</th><th>Hesaplanan tutar</th><th>Maliyeti eksik</th></tr></thead><tbody>@if(Model.ByLocation.Count==0){<tr><td colspan="5" class="empty">Bu kaynakta henüz baskı kaydı yok.</td></tr>}@foreach(var l in Model.ByLocation){<tr><td>@l.Name</td><td>@l.Jobs.ToString("N0")</td><td>@(l.Jobs == l.UnknownImpressions ? "Bilinmiyor" : l.Impressions.ToString("N0"))<small>@l.UnknownImpressions kayıtta toplam doğrulanmadı</small></td><td>@(l.CostKurus.HasValue ? (l.CostKurus.Value / 100m).ToString("N2") + " ₺" : "Hesaplanmadı")</td><td>@l.MissingCosts</td></tr>}</tbody></table></div></section>
+<partial name="_LiveToolbar" />
+<div data-live-region><partial name="_DashboardLive" model="Model" /></div>
+@section Scripts { <script src="~/js/live-updates.js" asp-append-version="true" defer></script> }

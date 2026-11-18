@@ -16,6 +16,12 @@ CultureInfo.DefaultThreadCurrentCulture = culture;
 CultureInfo.DefaultThreadCurrentUICulture = culture;
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddRazorPages();
+builder.Services.AddSingleton<LiveUpdates>();
+builder.Services.AddHostedService<LiveUpdateMonitor>();
+builder.Services.AddOutputCache(options => options.AddPolicy("LiveSnapshots", policy => policy
+    .With(context => context.HttpContext.Request.Query["handler"] == "Live"
+        && (context.HttpContext.Request.Path == "/" || context.HttpContext.Request.Path == "/Jobs"))
+    .Expire(TimeSpan.FromSeconds(2)).SetVaryByQuery("*")));
 builder.Services.AddScoped<IUsageMailSender, UsageMailSender>();
 builder.Services.AddScoped<NotificationProcessor>();
 builder.Services.AddHostedService<NotificationWorker>();
@@ -63,7 +69,9 @@ app.Use(async (context, next) =>
 });
 app.UseStaticFiles();
 app.UseRouting();
-app.MapRazorPages();
+app.UseOutputCache();
+app.MapRazorPages().CacheOutput("LiveSnapshots");
+app.MapGet("/live/events", LiveUpdates.Stream);
 app.MapGet("/health", (WindowsCollectorStatus windows, DeviceCollectorStatus device) => Results.Ok(new
 {
     Status = "ok", Mode = "LocalDevelopment",

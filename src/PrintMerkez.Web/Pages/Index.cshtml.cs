@@ -7,6 +7,14 @@ using PrintMerkez.Web.Data;
 namespace PrintMerkez.Web.Pages;
 public class IndexModel(PrintDbContext db) : PageModel
 {
+    public async Task<IActionResult> OnGetLiveAsync([FromServices] PrintMerkez.Web.Services.LiveUpdates live)
+    {
+        var unchanged = PrintMerkez.Web.Services.LiveUpdates.NotModified(this, live);
+        if (unchanged is not null) return unchanged;
+        await OnGetAsync();
+        if (!ModelState.IsValid) return BadRequest("Geçersiz filtre.");
+        return Partial("_DashboardLive", this);
+    }
     [BindProperty(SupportsGet = true), EnumDataType(typeof(EventSource))] public EventSource Source { get; set; } = EventSource.WindowsPrintService;
     public int Locations { get; private set; }
     public int Printers { get; private set; }
