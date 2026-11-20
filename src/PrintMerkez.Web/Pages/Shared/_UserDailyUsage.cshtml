@@ -1,0 +1,61 @@
+@using System.Globalization
+@using PrintMerkez.Web.Pages.Users
+@model PrintMerkez.Web.Pages.Users.DetailsModel
+@{
+    var max = Math.Max(1L, Model.Days.Select(d => Model.Value(d) ?? 0).DefaultIfEmpty().Max());
+    var scaleStep = Math.Max(1L, (long)Math.Ceiling(max / 4d));
+    var scaleMax = scaleStep * 4;
+    var width = Math.Max(900, Model.Days.Count * 28 + 100);
+    var step = (width - 100d) / Math.Max(1, Model.Days.Count);
+    var labelEvery = Math.Max(1, (int)Math.Ceiling(Model.Days.Count / 12d));
+    string Number(double n) => n.ToString("0.##", CultureInfo.InvariantCulture);
+}
+@if (Model.Source == EventSource.Simulation) { <p class="notice"><strong>Simülasyon görünümü.</strong> Gerçek kurum kullanımını göstermez.</p> }
+<section class="stats user-usage-stats" aria-label="Seçilen dönem özeti">
+    <article><div class="stat-label">Belge / baskı işi</div><div class="stat-value">@Model.Jobs.ToString("N0")</div><div class="stat-note">Her tamamlanan iş bir kez sayılır</div></article>
+    <article><div class="stat-label">Doğrulanmış baskı yüzü</div><div class="stat-value">@(Model.Impressions?.ToString("N0") ?? "Bilinmiyor")</div><div class="stat-note">Kopyalar dahil, bilinen toplam</div></article>
+    <article><div class="stat-label">Windows belge sayfası</div><div class="stat-value">@(Model.WindowsPages?.ToString("N0") ?? "Bilinmiyor")</div><div class="stat-note">Bilinen sayfalar; kopyalar dahil değildir</div></article>
+    <article><div class="stat-label">Toplamı doğrulanmamış iş</div><div class="stat-value">@Model.UnknownJobs.ToString("N0")</div><div class="stat-note">Çıktı toplamına eklenmez</div></article>
+</section>
+<section class="panel padded usage-chart-panel">
+    <div class="panel-heading"><div><h2 id="daily-chart-title">Günlük baskı dağılımı</h2><p>@Model.From?.ToString("dd.MM.yyyy") – @Model.To?.ToString("dd.MM.yyyy") · @Model.MetricLabel</p></div><span class="usage-legend"><span aria-hidden="true"></span>@Model.MetricLabel</span></div>
+    @if (Model.UnknownJobs > 0) { <p class="notice">@Model.UnknownJobs işte kopyalar dahil toplam henüz doğrulanmadı. Çıktı grafiği yalnızca bilinen toplamları içerir; sarı işaretli günlerde eksik bilgi vardır. Bu işler belge / baskı işi sayısında yer alır.</p> }
+    @if (Model.Jobs == 0) { <p class="empty">Seçilen tarihlerde bu kullanıcı için tamamlanmış baskı kaydı bulunamadı.</p> }
+    <div class="table-scroll usage-chart-scroll" tabindex="0" role="region" aria-label="Günlük grafik; dar ekranda yatay kaydırılabilir">
+        <svg class="usage-chart" style="min-width:@(width)px" viewBox="0 0 @width 350" role="img" aria-labelledby="daily-chart-title daily-chart-desc">
+            <desc id="daily-chart-desc">Her sütun bir günü gösterir. Ölçüm: @Model.MetricLabel. Kesin değerler aşağıdaki günlük veri tablosunda bulunur. Sıfır, kayıt olmadığını; bilinmiyor, çıktı toplamının doğrulanmadığını belirtir.</desc>
+            @for (var tick = 0; tick <= 4; tick++)
+            {
+                var y = 280 - tick * 60;
+                <line class="usage-grid" x1="70" x2="@(width - 30)" y1="@y" y2="@y" />
+                <g><text class="usage-axis" x="60" y="@(y + 4)" text-anchor="end">@((scaleStep * tick).ToString("N0"))</text></g>
+            }
+            @for (var i = 0; i < Model.Days.Count; i++)
+            {
+                var day = Model.Days[i];
+                var value = Model.Value(day);
+                var height = (value ?? 0) / (double)scaleMax * 240;
+                var x = 70 + i * step + step * .18;
+                var tooltip = $"{day.Day:dd.MM.yyyy}: {(value.HasValue ? value.Value.ToString("N0") : "Bilinmiyor")} · {day.Jobs:N0} iş · {day.UnknownJobs:N0} işte toplam doğrulanmadı";
+                <g class="usage-day" tabindex="0" role="img" aria-label="@tooltip">
+                    <title>@tooltip</title>
+                    <rect class="usage-hit" x="@Number(x - step * .18)" y="25" width="@Number(step)" height="270" />
+                    <rect class="usage-bar" x="@Number(x)" y="@Number(280 - height)" width="@Number(step * .64)" height="@Number(height)" rx="3" />
+                    @if (day.UnknownJobs > 0) { <circle class="usage-unknown" cx="@Number(x + step * .32)" cy="290" r="3.5" /> }
+                </g>
+                @if (i % labelEvery == 0 || i == Model.Days.Count - 1) { <g><text class="usage-axis" x="@Number(x + step * .32)" y="320" text-anchor="middle">@day.Day.ToString("dd.MM")</text></g> }
+            }
+        </svg>
+    </div>
+    <p class="help">Sütunların üzerine gelerek günlük değeri görebilirsiniz. Dar ekranda son günler gösterilir; önceki günler için yatay kaydırın. Ayrıntılar aşağıdaki tabloda da yer alır.</p>
+</section>
+<details class="panel padded usage-data">
+    <summary>Günlük verileri tablo olarak göster</summary>
+    <p class="help">Kullanıcı kimliğiyle eşleşen geçmiş işler ve aynı hesaba ait eşleştirilmemiş eski işler birlikte raporlanır. Geçmiş kayıtlar değiştirilmez. Başka kullanıcıya atanmış işler dahil edilmez.</p>
+    <div class="table-scroll"><table><caption class="sr-only">@Model.Person.DisplayName günlük baskı verileri</caption><thead><tr><th scope="col">Gün</th><th scope="col">Belge / iş</th><th scope="col">Doğrulanmış baskı yüzü</th><th scope="col">Windows belge sayfası</th><th scope="col">Toplamı doğrulanmamış iş</th></tr></thead><tbody>
+    @foreach (var day in Model.Days)
+    {
+        <tr data-usage-day="@day.Day.ToString("yyyy-MM-dd")"><th scope="row">@day.Day.ToString("dd.MM.yyyy")</th><td>@day.Jobs.ToString("N0")</td><td>@(day.ConfirmedTotal?.ToString("N0") ?? "Bilinmiyor")</td><td>@(day.Jobs > 0 && day.KnownWindowsJobs == 0 ? "Bilinmiyor" : day.WindowsPages.ToString("N0"))</td><td>@day.UnknownJobs.ToString("N0")</td></tr>
+    }
+    </tbody></table></div>
+</details>

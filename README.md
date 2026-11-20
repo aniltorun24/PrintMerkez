@@ -1,5 +1,15 @@
 # PrintMerkez
 
+Kullanıcı yönetimi: [Ayrı düzenleme sayfası ve silme](docs/kullanici-duzenleme-silme.md).
+
+AD rehberi: [Kullanıcı aktarımı ve eşleştirme kuralları](docs/ad-kullanici-aktarimi.md).
+
+Sunucuya geçiş: [Windows Server 2025 test paketi](docs/test-sunucusu-paketi.md).
+
+Kullanıcı adına tıklayarak [günlük baskı grafiğini](docs/kullanici-gunluk-grafik.md) açabilirsiniz.
+
+AD öncesi [geçici yönetici girişi](docs/yonetici-girisi.md) eklendi.
+
 Genel bakış ve baskı geçmişi için [sayfa yenilemeden canlı izleme](docs/canli-ekranlar.md) eklendi.
 
 Başka bilgisayarda devam etmek için: [Klonlama, veri taşıma ve başlatma](docs/yeni-bilgisayarda-baslatma.md).

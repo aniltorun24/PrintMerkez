@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
+using System.Net.NetworkInformation;
 using Microsoft.EntityFrameworkCore;
 using PrintMerkez.Core;
 using PrintMerkez.Web.Data;
@@ -19,10 +20,18 @@ public interface IWindowsPrintReader
 
 public sealed class WindowsPrintReader : IWindowsPrintReader
 {
+    public static bool IsLocalServer(string server, string machineName, string domainName)
+    {
+        var name = server.Trim().TrimEnd('.');
+        return string.Equals(name, machineName, StringComparison.OrdinalIgnoreCase)
+            || (!string.IsNullOrWhiteSpace(domainName) && string.Equals(name,
+                machineName + "." + domainName.Trim('.'), StringComparison.OrdinalIgnoreCase));
+    }
     public IReadOnlyList<CollectedWindowsEvent> Read(string server, string? bookmark, string? expectedEventId, int limit)
     {
         if (!OperatingSystem.IsWindows()) throw new PlatformNotSupportedException();
-        using var session = new EventLogSession(server);
+        var local = IsLocalServer(server, Environment.MachineName, IPGlobalProperties.GetIPGlobalProperties().DomainName);
+        using var session = local ? new EventLogSession() : new EventLogSession(server);
         using var channel = new EventLogConfiguration(WindowsPrintEventParser.Channel, session);
         if (!channel.IsEnabled) throw new InvalidOperationException("Baskı olay günlüğü kapalı.");
         if (bookmark is not null && expectedEventId is not null)
@@ -95,13 +104,14 @@ public sealed class WindowsCollector(IWindowsPrintReader reader, WindowsCollecto
 {
     public string CursorPath
     {
-        get
-        {
+        get => GetCursorPath(config, environment);
+    }
+    public static string GetCursorPath(IConfiguration config, IHostEnvironment environment)
+    {
             var identity = $"{config.GetConnectionString("PrintDb")}|{config["WindowsCollector:Server"]?.ToUpperInvariant()}|{config["WindowsCollector:Queue"]?.ToUpperInvariant()}|{config["WindowsCollector:PrinterId"]}";
             var hash = Convert.ToHexStringLower(SHA256.HashData(Encoding.UTF8.GetBytes(identity)))[..24];
             var directory = config["WindowsCollector:CursorDirectory"] ?? Path.Combine(environment.ContentRootPath, "App_Data");
             return Path.Combine(directory, $"windows-cursor-{hash}.json");
-        }
     }
 
     public async Task PollAsync(CancellationToken ct)

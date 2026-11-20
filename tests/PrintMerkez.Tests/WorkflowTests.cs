@@ -14,8 +14,25 @@ namespace PrintMerkez.Tests;
 
 public sealed class AppFactory : WebApplicationFactory<Program>
 {
+    private readonly bool authenticate;
+    public AppFactory(bool authenticate = true) => this.authenticate = authenticate;
     public const string Key = "test-agent-secret-32-characters-minimum";
     private readonly string database = Path.Combine(Path.GetTempPath(), $"printmerkez-test-{Guid.NewGuid():N}.db");
+    public new HttpClient CreateClient() => AuthenticateClient(base.CreateClient());
+    public new HttpClient CreateClient(WebApplicationFactoryClientOptions options) => AuthenticateClient(base.CreateClient(options));
+    private HttpClient AuthenticateClient(HttpClient client)
+    {
+        if (!authenticate) return client;
+        var html = client.GetStringAsync("/Login").GetAwaiter().GetResult();
+        var token = WebUtility.HtmlDecode(Regex.Match(html,
+            "name=\"__RequestVerificationToken\"[^>]*value=\"([^\"]+)\"").Groups[1].Value);
+        using var response = client.PostAsync("/Login", new FormUrlEncodedContent(new Dictionary<string, string>
+        {
+            ["Username"] = "admin", ["Password"] = "12345", ["__RequestVerificationToken"] = token
+        })).GetAwaiter().GetResult();
+        if (response.StatusCode != HttpStatusCode.Redirect) response.EnsureSuccessStatusCode();
+        return client;
+    }
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");

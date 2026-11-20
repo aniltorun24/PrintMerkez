@@ -8,8 +8,7 @@ public static class CostCalculator
     {
         var normalized = DirectoryUser.Normalize(job.Account);
         job.NormalizedAccount = normalized;
-        var user = await db.DirectoryUsers.AsNoTracking().Include(u => u.Department)
-            .SingleOrDefaultAsync(u => u.NormalizedAccount == normalized);
+        var user = await DirectoryAccounts.FindAsync(job.Account, db);
         job.DirectoryUserId = user?.Id;
         job.UserDisplayName = user?.DisplayName;
         job.DepartmentName = user?.Department?.Name;

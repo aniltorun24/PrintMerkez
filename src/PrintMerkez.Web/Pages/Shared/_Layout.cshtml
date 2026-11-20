@@ -1,3 +1,5 @@
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{ var serverMode = Configuration["Deployment:Mode"] == "Server"; }
 <!DOCTYPE html>
 <html lang="tr"><head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>@ViewData["Title"] · PrintMerkez</title><script src="~/js/theme.js" asp-append-version="true"></script>
 <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" /></head>
@@ -23,9 +25,13 @@
                 <option value="purple">Mor</option>
             </select>
         </div>
-        <span class="environment">GELİŞTİRME</span>
+        <span class="environment">@(serverMode ? "TEST SUNUCUSU" : "GELİŞTİRME")</span>
+        <form method="post" asp-page="/Logout" class="logout-form">
+            <span>@User.Identity?.Name</span>
+            <button class="button secondary" type="submit">Çıkış yap</button>
+        </form>
     </div>
     <span id="theme-status" class="sr-only" role="status" aria-live="polite"></span>
-</header><main><div class="notice"><strong>Yerel pilot ortamı.</strong> Print server bağlantı durumu genel bakış ekranından izlenir. AD ile giriş henüz etkin değil.</div>
+</header><main><div class="notice"><strong>@(serverMode ? "Test sunucusu." : "Yerel pilot ortamı.")</strong> Print server bağlantı durumu genel bakış ekranından izlenir. AD ile giriş henüz etkin değil.</div>
 @if (TempData["Success"] is string message) { <div class="success" role="status">@message</div> }
 @RenderBody()</main><footer>PrintMerkez <span>Merkezi görünürlük, kontrollü baskı.</span></footer></div>@await RenderSectionAsync("Scripts", required: false)</body></html>

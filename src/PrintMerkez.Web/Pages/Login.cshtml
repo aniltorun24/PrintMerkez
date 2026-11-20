@@ -1,0 +1,33 @@
+@page
+@model PrintMerkez.Web.Pages.LoginModel
+@{ Layout = null; }
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Yönetici girişi · PrintMerkez</title>
+    <script src="~/js/theme.js" asp-append-version="true"></script>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body class="login-page">
+    <main class="login-card" aria-labelledby="login-title">
+        <div class="login-brand"><span class="brand-icon">P</span><strong>PrintMerkez</strong></div>
+        <div class="eyebrow">MERKEZİ YAZICI YÖNETİMİ</div>
+        <h1 id="login-title">Yönetici girişi</h1>
+        <p>Baskı kayıtlarını ve yönetim panelini görüntülemek için giriş yapın.</p>
+        <form method="post" class="login-form">
+            <input type="hidden" asp-for="ReturnUrl" />
+            <div asp-validation-summary="All" role="alert"></div>
+            <label asp-for="Username">Kullanıcı adı
+                <input asp-for="Username" autocomplete="username" maxlength="100" autofocus required />
+            </label>
+            <label asp-for="Password">Şifre
+                <input asp-for="Password" type="password" autocomplete="current-password" maxlength="256" required />
+            </label>
+            <button class="button" type="submit">Giriş yap</button>
+        </form>
+        <p class="login-note">Bu panel yalnızca yetkili yöneticilerin kullanımına açıktır.</p>
+    </main>
+</body>
+</html>

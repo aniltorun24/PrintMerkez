@@ -235,8 +235,8 @@ public class UsageNotificationTests
     public async Task ManagerRoleNeedsEmailAndAssignmentRejectsWrongOrganization()
     {
         using var app=new AppFactory();using var client=Client(app);
-        var invalid=await Form(client,"/Users",new(){["Input.Account"]="DOMAIN\\badmanager",["Input.DisplayName"]="Eksik yönetici",["Input.Role"]="Manager"});
-        Assert.Equal(HttpStatusCode.OK,(await client.PostAsync("/Users",new FormUrlEncodedContent(invalid))).StatusCode);
+        var invalid=await Form(client,"/Users/Edit",new(){["Input.Account"]="DOMAIN\\badmanager",["Input.DisplayName"]="Eksik yönetici",["Input.Role"]="Manager"});
+        Assert.Equal(HttpStatusCode.OK,(await client.PostAsync("/Users/Edit",new FormUrlEncodedContent(invalid))).StatusCode);
         (int User,int Manager,int Policy,int Department) ids;
         using(var scope=app.Services.CreateScope()) {var db=scope.ServiceProvider.GetRequiredService<PrintDbContext>();Assert.False(await db.DirectoryUsers.AnyAsync(u=>u.Account=="DOMAIN\\badmanager"));ids=await Setup(db,10,false);}
         var wrong=await Form(client,"/Managers",new(){["Input.DepartmentId"]=ids.Department.ToString(),["Input.LocationId"]="2",["Input.ManagerUserId"]=ids.Manager.ToString(),["Input.IsActive"]="true"});

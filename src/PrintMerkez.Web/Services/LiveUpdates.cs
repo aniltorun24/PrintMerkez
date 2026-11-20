@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 using PrintMerkez.Web.Data;
+using Microsoft.AspNetCore.Authentication;
 
 namespace PrintMerkez.Web.Services;
 
@@ -33,12 +34,15 @@ public sealed class LiveUpdates
         var etag = "\"" + live.Version + "-" + filterKey + "\"";
         page.Response.Headers.ETag = etag;
         // Revalidate using the server revision; browsers must not reuse stale fragments on reconnect.
-        page.Response.Headers.CacheControl = "no-cache";
+        page.Response.Headers.CacheControl = "no-cache, no-store";
         return page.Request.Headers.IfNoneMatch.ToString() == etag ? new StatusCodeResult(304) : null;
     }
     public static async Task Stream(HttpContext http, LiveUpdates live, IHostApplicationLifetime lifetime)
     {
         using var linked = CancellationTokenSource.CreateLinkedTokenSource(http.RequestAborted, lifetime.ApplicationStopping);
+        var authentication = await http.AuthenticateAsync();
+        if (authentication.Properties?.ExpiresUtc is DateTimeOffset expires)
+            linked.CancelAfter(expires > DateTimeOffset.UtcNow ? expires - DateTimeOffset.UtcNow : TimeSpan.Zero);
         var ct = linked.Token; var subscription = live.Subscribe();
         http.Response.ContentType = "text/event-stream";
         http.Response.Headers.CacheControl = "no-store";

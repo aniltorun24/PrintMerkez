@@ -20,13 +20,13 @@ public static class ManagerResolver
 {
     public static async Task<(DirectoryUser? Manager,string? Reason)> ResolveAsync(DirectoryUser user, PrintDbContext db)
     {
-        if (!user.IsActive) return (null,"Kullanıcı pasif.");
+        if (!user.IsActive || user.DeletedAtUtc is not null) return (null,"Kullanıcı pasif veya silinmiş.");
         if (user.DepartmentId is null || user.LocationId is null) return (null,"Kullanıcının departman veya lokasyonu tanımlı değil.");
         var assignment = await db.ManagerAssignments.AsNoTracking().Include(a=>a.ManagerUser).Include(a=>a.Department)
             .SingleOrDefaultAsync(a=>a.DepartmentId==user.DepartmentId && a.LocationId==user.LocationId && a.IsActive);
         if (assignment is null) return (null,"Bu departman ve lokasyon için aktif yönetici ataması yok.");
         var manager=assignment.ManagerUser;
-        if (!assignment.Department.IsActive || !manager.IsActive || manager.Role!=OrganizationRole.Manager
+        if (!assignment.Department.IsActive || !manager.IsActive || manager.DeletedAtUtc is not null || manager.Role!=OrganizationRole.Manager
             || manager.DepartmentId!=user.DepartmentId || manager.LocationId!=user.LocationId)
             return (null,"Atanan yöneticinin rolü, durumu veya organizasyon bilgisi atamayla uyuşmuyor.");
         if (manager.Id==user.Id) return (null,"Kişinin kendisine yönetici bildirimi gönderilmez.");
@@ -39,8 +39,7 @@ public static class UsageAlertService
     public static async Task EvaluateJobAsync(PrintJob job,PrintDbContext db)
     {
         if(job.Status!=PrintJobStatus.QueueCompleted || job.Impressions is null) return;
-        var user=await db.DirectoryUsers.Include(u=>u.Department).Include(u=>u.Location)
-            .SingleOrDefaultAsync(u=>u.NormalizedAccount==job.NormalizedAccount);
+        var user=await DirectoryAccounts.FindAsync(job.Account,db);
         if(user is null) return;
         var policies=await db.UsageAlertPolicies.Where(p=>p.IsActive&&p.Source==job.Source).ToListAsync();
         foreach(var policy in policies) await EvaluateAsync(user,policy,UsageWindow.For(job.OccurredAtUtc,policy.Period,job.Id),db,job);
@@ -49,7 +48,7 @@ public static class UsageAlertService
     {
         await using var transaction=await db.Database.BeginTransactionAsync();
         var policies=await db.UsageAlertPolicies.Where(p=>p.IsActive&&p.Period!=UsagePeriod.PerJob&&(!source.HasValue||p.Source==source)).ToListAsync();
-        var users=await db.DirectoryUsers.Include(u=>u.Department).Include(u=>u.Location).ToListAsync();
+        var users=await db.DirectoryUsers.Where(u=>u.DeletedAtUtc==null).Include(u=>u.Department).Include(u=>u.Location).ToListAsync();
         foreach(var policy in policies)
             foreach(var user in users) await EvaluateAsync(user,policy,UsageWindow.For(DateTime.UtcNow,policy.Period),db);
         await db.SaveChangesAsync(); await transaction.CommitAsync();
@@ -60,9 +59,13 @@ public static class UsageAlertService
         if(exists || db.UsageNotifications.Local.Any(n=>n.PolicyId==policy.Id&&n.UserId==user.Id&&n.PeriodKey==window.Key&&n.Source==policy.Source)) return;
         long total;
         if(policy.Period==UsagePeriod.PerJob) total=job?.Impressions??0;
-        else total=await db.Jobs.Where(j=>(j.DirectoryUserId==user.Id||(j.DirectoryUserId==null&&j.NormalizedAccount==user.NormalizedAccount))
+        else
+        {
+        var aliases=DirectoryAccounts.Aliases(user);
+        total=await db.Jobs.Where(j=>(j.DirectoryUserId==user.Id||(j.DirectoryUserId==null&&aliases.Contains(j.NormalizedAccount)))
             &&j.Source==policy.Source&&j.Status==PrintJobStatus.QueueCompleted&&j.OccurredAtUtc>=window.StartUtc&&j.OccurredAtUtc<window.EndUtc)
             .SumAsync(j=>(long?)j.Impressions)??0;
+        }
         if(total<=policy.Threshold) return;
         var resolution=await ManagerResolver.ResolveAsync(user,db);
         var notification=new UsageNotification

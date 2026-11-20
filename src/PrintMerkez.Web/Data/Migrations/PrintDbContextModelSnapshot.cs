@@ -114,6 +114,36 @@ namespace PrintMerkez.Web.Data.Migrations
                         .HasMaxLength(160)
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("AdDepartment")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AdDistinguishedName")
+                        .HasMaxLength(1024)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AdDomain")
+                        .HasMaxLength(80)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("AdImportedAtUtc")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AdObjectGuid")
+                        .HasMaxLength(36)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AdOffice")
+                        .HasMaxLength(256)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AdSamAccountName")
+                        .HasMaxLength(160)
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("DeletedAtUtc")
+                        .HasColumnType("TEXT");
+
                     b.Property<int?>("DepartmentId")
                         .HasColumnType("INTEGER");
 
@@ -142,12 +172,17 @@ namespace PrintMerkez.Web.Data.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AdObjectGuid")
+                        .IsUnique();
+
                     b.HasIndex("DepartmentId");
 
                     b.HasIndex("LocationId");
 
                     b.HasIndex("NormalizedAccount")
                         .IsUnique();
+
+                    b.HasIndex("AdDomain", "AdSamAccountName");
 
                     b.ToTable("DirectoryUsers");
                 });

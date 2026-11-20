@@ -1,0 +1,27 @@
+@page "{id:int?}"
+@model PrintMerkez.Web.Pages.Users.EditModel
+@{ ViewData["Title"]=Model.Editing?"Kullanıcıyı düzenle":"Kullanıcı ekle"; }
+<div class="page-heading"><div><div class="eyebrow">KULLANICI YÖNETİMİ</div><h1>@ViewData["Title"]</h1><p>@(Model.Editing?Model.Person!.DisplayName:"Yeni kullanıcı bilgilerini tanımlayın.")</p></div><a class="button secondary" asp-page="/Users/Index" asp-route-Search="@Model.Search" asp-route-PageNumber="@Model.ListPage">← Kullanıcı listesi</a></div>
+<div asp-validation-summary="All" role="alert"></div>
+<form method="post" class="panel form-card user-edit-form">
+    <input type="hidden" asp-for="ChangeToken" /><input type="hidden" asp-for="Search" /><input type="hidden" asp-for="ListPage" />
+    <h2>Kullanıcı bilgileri</h2><div class="form-grid">
+    <div class="field"><label asp-for="Input.Account">Baskı hesabı</label><input asp-for="Input.Account" placeholder="DOMAIN\kullanici" /><span asp-validation-for="Input.Account"></span></div>
+    <div class="field"><label asp-for="Input.DisplayName">Ad soyad</label><input asp-for="Input.DisplayName" /><span asp-validation-for="Input.DisplayName"></span></div>
+    <div class="field"><label asp-for="Input.DepartmentId">Departman</label><select asp-for="Input.DepartmentId"><option value="">Eşleştirilmedi</option>@foreach(var d in Model.Departments){<option value="@d.Id">@d.Name @(d.IsActive?"":"(pasif)")</option>}</select></div>
+    <div class="field"><label asp-for="Input.LocationId">Lokasyon</label><select asp-for="Input.LocationId"><option value="">Tanımlanmadı</option>@foreach(var l in Model.Locations){<option value="@l.Id">@l.Name</option>}</select></div>
+    <div class="field"><label asp-for="Input.Role">Bildirim rolü</label><select asp-for="Input.Role"><option value="Employee">Çalışan</option><option value="Manager">Yönetici</option></select><p class="help">Bildirim rolü uygulamaya giriş veya kullanıcı yönetimi yetkisi vermez.</p></div>
+    <div class="field"><label asp-for="Input.Email">E-posta adresi</label><input asp-for="Input.Email" type="email" /><span asp-validation-for="Input.Email"></span><p class="help">Yönetici bildirim rolünde zorunludur.</p></div></div>
+    <label class="checkbox"><input asp-for="Input.IsActive" /> Aktif kullanıcı</label><p class="help">Pasif işareti yazıcıdan baskı alınmasını engellemez. Geçmiş baskıların bilgileri değiştirilmez.</p>
+    @if(Model.Person?.AdObjectGuid is not null){<p class="help">Bu hesap AD'den aktarılmıştır. Buradaki değişiklikler AD'ye yazılmaz; sonraki aktarım ad, e-posta ve aktiflik bilgisini AD'den güncelleyebilir.</p>}
+    <div class="actions"><button class="button" type="submit">@(Model.Editing?"Değişiklikleri kaydet":"Kullanıcı ekle")</button><a class="button secondary" asp-page="/Users/Index" asp-route-Search="@Model.Search" asp-route-PageNumber="@Model.ListPage">İptal</a></div>
+</form>
+@if(Model.Editing)
+{
+    <section class="panel form-card user-delete-panel" aria-labelledby="delete-user-title"><h2 id="delete-user-title">Kullanıcıyı sil</h2><p>Kullanıcı listeden kaldırılır ve pasif yapılır. Baskı geçmişi ile denetim kayıtları korunur. AD hesabı silinmez; sonraki AD aktarımı bu kaydı yeniden etkinleştirmez.</p>
+    <form method="post" asp-page-handler="Delete" asp-route-id="@Model.Person!.Id">
+        <input type="hidden" name="ChangeToken" value="@Model.ChangeToken" /><input type="hidden" name="Search" value="@Model.Search" /><input type="hidden" name="ListPage" value="@Model.ListPage" />
+        <label class="checkbox"><input type="checkbox" name="ConfirmDelete" value="true" required /> @Model.Person!.DisplayName kullanıcısını listeden kaldırmayı onaylıyorum.</label>
+        <button class="button danger" type="submit">Kullanıcıyı sil</button>
+    </form></section>
+}

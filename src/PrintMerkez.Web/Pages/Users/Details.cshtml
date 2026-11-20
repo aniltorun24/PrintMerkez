@@ -1,0 +1,30 @@
+@page "{id:int}"
+@model PrintMerkez.Web.Pages.Users.DetailsModel
+@{ ViewData["Title"] = Model.Person.DisplayName + " · Günlük baskılar"; }
+<div class="page-heading">
+    <div><div class="eyebrow">KULLANICI BASKI ANALİZİ</div><h1>@Model.Person.DisplayName</h1><p>@Model.Person.Account · @(Model.Person.Department?.Name ?? "Departman eşleştirilmedi") · @(Model.Person.Location?.Name ?? "Lokasyon tanımlanmadı")</p></div>
+    <div class="actions"><a class="button secondary" asp-page="/Users/Index">← Kullanıcılar</a>@if(User.IsInRole("Admin")){<a class="button secondary" asp-page="/Users/Edit" asp-route-id="@Model.Person.Id">Kullanıcıyı düzenle</a>}</div>
+</div>
+<form method="get" class="filters" aria-label="Günlük baskı filtreleri">
+    <label>Başlangıç<input asp-for="From" type="date" asp-format="{0:yyyy-MM-dd}" required /></label>
+    <label>Bitiş<input asp-for="To" type="date" asp-format="{0:yyyy-MM-dd}" required /></label>
+    <label>Grafikte göster<select asp-for="Metric"><option value="Impressions">Toplam çıktı (kopyalar dahil)</option><option value="Jobs">Belge / baskı işi sayısı</option></select></label>
+    <label>Kayıt kaynağı<select asp-for="Source"><option value="WindowsPrintService">Windows kayıtları</option><option value="Simulation">Simülasyon kayıtları</option></select></label>
+    <button type="submit" class="button">Göster</button>
+    <a class="button secondary" asp-page="/Users/Details" asp-route-id="@Model.Person.Id">Son 30 gün</a>
+</form>
+<div asp-validation-summary="All" role="alert"></div>
+<p class="explanation">Günler Türkiye saatine göredir. Yalnızca kuyruğu tamamlanan işler sayılır; fiziksel teslim doğrulanmaz. Bir belgenin 3 kopyası 1 baskı işi, toplamı doğrulanmışsa 3 baskı yüzüdür. Baskı yüzü fiziksel kâğıt adedi değildir. Ortak hesap kullanılıyorsa bu hesabın toplamı gösterilir.</p>
+@if(Model.Person.AdObjectGuid is not null)
+{
+    <section class="panel padded"><h2>AD bilgileri</h2>
+        <p>AD departmanı: @(Model.Person.AdDepartment ?? "Dolu değil") · AD ofisi: @(Model.Person.AdOffice ?? "Dolu değil")</p>
+        <p class="help">Son aktarım: @(Model.Person.AdImportedAtUtc.HasValue ? TimeZoneInfo.ConvertTimeFromUtc(Model.Person.AdImportedAtUtc.Value,PrintMerkez.Web.Services.UserDailyUsage.TurkeyZone).ToString("dd.MM.yyyy HH:mm") : "Bilinmiyor"). Eksik departmanlar uygun OU klasöründen tamamlanır. Yönetici atamaları uygulamadan yapılır.</p>
+    </section>
+}
+@if (Model.ModelState.IsValid)
+{
+    <partial name="_LiveToolbar" />
+    <div data-live-region><partial name="_UserDailyUsage" model="Model" /></div>
+}
+@section Scripts { <script src="~/js/live-updates.js" asp-append-version="true" defer></script> }

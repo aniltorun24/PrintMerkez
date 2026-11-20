@@ -28,6 +28,8 @@ public sealed class PrintDbContext(DbContextOptions<PrintDbContext> options, IHt
         model.Entity<PrintJob>().HasOne(x => x.Location).WithMany().OnDelete(DeleteBehavior.Restrict);
         model.Entity<Department>().HasIndex(x => x.Name).IsUnique();
         model.Entity<DirectoryUser>().HasIndex(x => x.NormalizedAccount).IsUnique();
+        model.Entity<DirectoryUser>().HasIndex(x => x.AdObjectGuid).IsUnique();
+        model.Entity<DirectoryUser>().HasIndex(x => new { x.AdDomain, x.AdSamAccountName });
         model.Entity<DirectoryUser>().HasOne(x => x.Department).WithMany().OnDelete(DeleteBehavior.Restrict);
         model.Entity<CostTariff>().HasIndex(x => new { x.PrinterId, x.EffectiveFromUtc }).IsUnique();
         model.Entity<CostTariff>().HasOne(x => x.Printer).WithMany().OnDelete(DeleteBehavior.Restrict);

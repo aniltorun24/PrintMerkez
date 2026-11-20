@@ -17,7 +17,7 @@ public class IndexModel(PrintDbContext db) : PageModel
     {
         Departments=await db.Departments.AsNoTracking().OrderBy(d=>d.Name).ToListAsync();
         Locations=await db.Locations.AsNoTracking().OrderBy(l=>l.Name).ToListAsync();
-        Managers=await db.DirectoryUsers.AsNoTracking().Where(u=>u.Role==OrganizationRole.Manager&&u.IsActive).OrderBy(u=>u.DisplayName).ToListAsync();
+        Managers=await db.DirectoryUsers.AsNoTracking().Where(u=>u.Role==OrganizationRole.Manager&&u.IsActive&&u.DeletedAtUtc==null).OrderBy(u=>u.DisplayName).ToListAsync();
         Assignments=await db.ManagerAssignments.AsNoTracking().Include(a=>a.Department).Include(a=>a.Location).Include(a=>a.ManagerUser).OrderBy(a=>a.Department.Name).ThenBy(a=>a.Location.Name).Take(500).ToListAsync();
     }
     public async Task<IActionResult> OnGetAsync(int? id)
@@ -34,7 +34,7 @@ public class IndexModel(PrintDbContext db) : PageModel
         var manager=Managers.SingleOrDefault(u=>u.Id==Input.ManagerUserId);
         if(Input.IsActive&&(manager is null||manager.DepartmentId!=Input.DepartmentId||manager.LocationId!=Input.LocationId||!NotificationLabels.IsEmail(manager.Email)))
             ModelState.AddModelError("Input.ManagerUserId","Aktif, geçerli e-postalı ve seçilen departman/lokasyona bağlı bir yönetici seçin.");
-        if(!await db.DirectoryUsers.AnyAsync(u=>u.Id==Input.ManagerUserId))ModelState.AddModelError("Input.ManagerUserId","Kullanıcı bulunamadı.");
+        if(!await db.DirectoryUsers.AnyAsync(u=>u.Id==Input.ManagerUserId&&u.DeletedAtUtc==null))ModelState.AddModelError("Input.ManagerUserId","Kullanıcı bulunamadı.");
         if(await db.ManagerAssignments.AnyAsync(a=>a.DepartmentId==Input.DepartmentId&&a.LocationId==Input.LocationId&&(!id.HasValue||a.Id!=id.Value)))ModelState.AddModelError("","Bu departman ve lokasyon için atama var. Mevcut kaydı düzenleyin.");
         if(!ModelState.IsValid)return Page();
         var assignment=id.HasValue?await db.ManagerAssignments.FindAsync(id.Value):new ManagerAssignment();if(assignment is null)return NotFound();

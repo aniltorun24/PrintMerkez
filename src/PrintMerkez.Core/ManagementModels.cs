@@ -23,6 +23,14 @@ public sealed class DirectoryUser
     public Location? Location { get; set; }
     public bool IsActive { get; set; } = true;
     public static string Normalize(string account) => account.Trim().ToUpperInvariant();
+    [StringLength(36)] public string? AdObjectGuid { get; set; }
+    [StringLength(80)] public string? AdDomain { get; set; }
+    [StringLength(160)] public string? AdSamAccountName { get; set; }
+    [StringLength(1024)] public string? AdDistinguishedName { get; set; }
+    [StringLength(256)] public string? AdDepartment { get; set; }
+    [StringLength(256)] public string? AdOffice { get; set; }
+    public DateTime? AdImportedAtUtc { get; set; }
+    public DateTime? DeletedAtUtc { get; set; }
 }
 
 // Append-only rate versions. Amounts are integer kurus, never binary floating-point.

@@ -106,7 +106,7 @@ public sealed class ManagementTests
         await Assert.ThrowsAsync<InvalidOperationException>(()=>db.SaveChangesAsync());
     }
     [Fact]
-    public async Task DepartmentFormCreatesAuditWithUnverifiedLocalActor()
+    public async Task DepartmentFormCreatesAuditWithSignedInAdmin()
     {
         using var app=new AppFactory(); using var client=Client(app);
         var fields=await Form(client,"/Departments",new(){["Input.Name"]="Muhasebe",["Input.IsActive"]="true"});
@@ -114,7 +114,7 @@ public sealed class ManagementTests
         using var scope=app.Services.CreateScope(); var db=scope.ServiceProvider.GetRequiredService<PrintDbContext>();
         var department=await db.Departments.SingleAsync(d=>d.Name=="Muhasebe");
         var audit=await db.AuditEntries.SingleAsync(a=>a.Entity==nameof(Department)&&a.EntityKey==department.Id.ToString());
-        Assert.Contains("kimlik doğrulanmadı",audit.Actor); Assert.Null(audit.BeforeJson);
+        Assert.Equal("admin",audit.Actor); Assert.Null(audit.BeforeJson);
         Assert.Equal("Muhasebe",JsonDocument.Parse(audit.AfterJson!).RootElement.GetProperty("Name").GetString());
     }
     [Fact]
@@ -135,10 +135,10 @@ public sealed class ManagementTests
     public async Task UserAccountsAreNormalizedAndDuplicateIsRejected()
     {
         using var app=new AppFactory(); using var client=Client(app);
-        var first=await Form(client,"/Users",new(){["Input.Account"]=" DOMAIN\\Anil ",["Input.DisplayName"]="Anıl",["Input.IsActive"]="true"});
-        Assert.Equal(HttpStatusCode.Redirect,(await client.PostAsync("/Users",new FormUrlEncodedContent(first))).StatusCode);
-        var second=await Form(client,"/Users",new(){["Input.Account"]="domain\\anil",["Input.DisplayName"]="Tekrar"});
-        Assert.Equal(HttpStatusCode.OK,(await client.PostAsync("/Users",new FormUrlEncodedContent(second))).StatusCode);
+        var first=await Form(client,"/Users/Edit",new(){["Input.Account"]=" DOMAIN\\Anil ",["Input.DisplayName"]="Anıl",["Input.IsActive"]="true"});
+        Assert.Equal(HttpStatusCode.Redirect,(await client.PostAsync("/Users/Edit",new FormUrlEncodedContent(first))).StatusCode);
+        var second=await Form(client,"/Users/Edit",new(){["Input.Account"]="domain\\anil",["Input.DisplayName"]="Tekrar"});
+        Assert.Equal(HttpStatusCode.OK,(await client.PostAsync("/Users/Edit",new FormUrlEncodedContent(second))).StatusCode);
         using var scope=app.Services.CreateScope();
         Assert.Single(await scope.ServiceProvider.GetRequiredService<PrintDbContext>().DirectoryUsers.ToListAsync());
     }
